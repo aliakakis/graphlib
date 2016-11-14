@@ -6,26 +6,26 @@ class Graph {
      *
      */
     constructor() {
+        this.nodeList = {};
         this.nodesArray = [];
     }
 
     /**
-     * Add a node to the graph
-     * @param {{name: "", description: "", tag: ""}} node - Pass a literal JS object
+     *
+     * @param nodeId
+     * @param nodeOptions
      */
-    addNode(node) {
-        if (node === undefined) {
-            throw new SyntaxError("You haven't provided a unique name for your node e.g. {name:'node1'}");
+    addNode(nodeId, nodeOptions = {}) {
+        if (nodeId === undefined || nodeId === "" || typeof nodeId !== "string") {
+            throw new SyntaxError("You haven't provided a string based unique name for your node e.g. 'node1'");
         }
 
-        let nodes = node instanceof Array ? node : [node];
+        const {description: description = "", tag: tag = ""} = nodeOptions;
 
-        for (let node of nodes) {
-            if (node.name === undefined) {
-                throw new SyntaxError("You haven't provided a unique name for your node e.g. {name:'node1'}");
-            }
-            this.nodesArray.push(node);
-        }
+        this.nodeList[nodeId] = {
+            description,
+            tag
+        };
     }
 
     /**
@@ -33,30 +33,23 @@ class Graph {
      * @param {string} nodeId - Unique string ID of the node to be deleted
      */
     deleteNode(nodeId) {
-        if (nodeId === undefined) {
-            throw new SyntaxError("You haven't provided the unique name for the node to be deleted e.g. 'node1'");
+        if (nodeId === undefined || nodeId === "" || typeof nodeId !== "string") {
+            throw new SyntaxError("You haven't provided a string based unique name for the node to be deleted e.g. 'node1'");
         }
 
-        let nodes = nodeId instanceof Array ? nodeId : [nodeId];
-
-        for (let name of nodes) {
-            let isNodeFound;
-
-            for (let node of this.nodesArray) {
-                if (node.name === name) {
-                    this.nodesArray.splice(this.nodesArray.indexOf(node), 1);
-                    isNodeFound = true;
-                }
-            }
-            isNodeFound ? console.log("Node " + name + " deleted") : console.log("Node " + name + " not found");
+        if (this.nodeList[nodeId] === undefined) {
+            throw new SyntaxError("Node " + nodeId + " is not present please check the name passed");
         }
+
+        delete this.nodeList[nodeId];
     }
 
 
     /**
      * Connect a node with another node creating edges
-     * @param {string} sourceNodeId - Source node ID
-     * @param {array} targetNodeIds - Array of target nodes IDs
+     * @param sourceNodeId
+     * @param targetNodeId
+     * @param edgeLabel
      */
     addEdge(sourceNodeId, targetNodeId, edgeLabel) {
 
@@ -64,69 +57,66 @@ class Graph {
 
     /**
      * Delete a node edges
-     * @param {string} sourceNodeId - Source node ID
-     * @param {array} targetNodeIds - Array of target nodes IDs
+     * @param sourceNodeId
+     * @param targetNodeId
+     * @param edgeLabel
      */
     deleteEdge(sourceNodeId, targetNodeId, edgeLabel) {
 
     }
 
+    getEdgesOfNodes() {
+
+    }
+
     /**
      * Find nodes in the graph
-     * @param {array} nodeIdsArray - Array of node IDs
+     * @param nodeId
+     * @param showInConsole
+     * @returns {Array}
      */
-    findNodes(nodeId) {
+    findNodes(nodeId, showInConsole = false) {
         if (nodeId === undefined) {
-            throw new SyntaxError("You haven't provided the unique name or array or unique names for the node to be deleted e.g. 'node1' or ['node1', 'node2']");
+            throw new SyntaxError("You haven't provided the unique name or array of unique names for the node to be deleted e.g. 'node1' or ['node1', 'node2']");
         }
 
-        let filteredNodesArray = [];
-        let nodes = nodeId instanceof Array ? nodeId : [nodeId];
+        let filteredNodesArray = [],
+            nodes = nodeId instanceof Array ? nodeId : [nodeId];
 
         for (let name of nodes) {
-            let isNodeFound;
-
-            for (let node of this.nodesArray) {
-                if (node.name === name) {
-                    filteredNodesArray.push(node);
-                    isNodeFound = true;
-                }
+            if (this.nodeList[name] === undefined) {
+                throw new SyntaxError("Node " + name + " is not present please check the name passed");
             }
-            isNodeFound ? console.log("Node " + name + " found") : console.log("Node " + name + " not found");
+            filteredNodesArray.push(this.nodeList[name]);
         }
 
+        showInConsole ? console.log(filteredNodesArray) : false;
         return filteredNodesArray;
     }
 
     /**
      *
+     * @param showInConsole
+     * @returns {{}|*}
      */
-    getAllNodes() {
-        return this.nodesArray;
+    getAllNodes(showInConsole = false) {
+        showInConsole ? console.log(this.nodeList) : false;
+        return this.nodeList;
     }
 
 }
 
 let graph = new Graph();
 
-graph.addNode([
-    {
-        name: "a"
-    },
-    {
-        name: "b"
-    },
-    {
-        name: "c"
-    },
-    {
-        name: "d"
-    }
-]);
+graph.addNode("node 1", {
+    description: "first node",
+    tag: "movable"
+});
 
+graph.addNode("node 2");
 
-//graph.deleteNode("b");
+//graph.deleteNode("node 1");
 
-//graph.getAllNodes();
+graph.getAllNodes(true);
 
-console.log(graph.findNodes(["b","c"]));
+graph.findNodes("node 1", true);
