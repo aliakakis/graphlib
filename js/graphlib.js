@@ -16,7 +16,7 @@ class Graph {
      * @param nodeOptions
      */
     addNode(nodeId, nodeOptions = {}) {
-        if (nodeId === undefined || nodeId === "" || typeof nodeId !== "string") {
+        if (typeof nodeId === 'undefined' || nodeId === "" || typeof nodeId !== "string") {
             throw new SyntaxError("You haven't provided a string based unique name for your node e.g. 'node1'");
         }
 
@@ -33,11 +33,11 @@ class Graph {
      * @param {string} nodeId - Unique string ID of the node to be deleted
      */
     deleteNode(nodeId) {
-        if (nodeId === undefined || nodeId === "" || typeof nodeId !== "string") {
+        if (typeof nodeId === 'undefined' || nodeId === "" || typeof nodeId !== "string") {
             throw new SyntaxError("You haven't provided a string based unique name for the node to be deleted e.g. 'node1'");
         }
 
-        if (this.nodeList[nodeId] === undefined) {
+        if (typeof this.nodeList[nodeId] === 'undefined') {
             throw new SyntaxError("Node " + nodeId + " is not present please check the name passed");
         }
 
@@ -76,7 +76,7 @@ class Graph {
      * @returns {Array}
      */
     findNodes(nodeId, showInConsole = false) {
-        if (nodeId === undefined) {
+        if (typeof nodeId === 'undefined') {
             throw new SyntaxError("You haven't provided the unique name or array of unique names for the node to be deleted e.g. 'node1' or ['node1', 'node2']");
         }
 
@@ -84,7 +84,7 @@ class Graph {
             nodes = nodeId instanceof Array ? nodeId : [nodeId];
 
         for (let name of nodes) {
-            if (this.nodeList[name] === undefined) {
+            if (typeof this.nodeList[name] === 'undefined') {
                 throw new SyntaxError("Node " + name + " is not present please check the name passed");
             }
             filteredNodesArray.push(this.nodeList[name]);
