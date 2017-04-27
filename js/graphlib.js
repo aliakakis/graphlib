@@ -1,7 +1,7 @@
 /**
  *
  */
-class Graph {
+class EventGraph {
     /**
      *
      */
@@ -106,17 +106,17 @@ class Graph {
 
 }
 
-let graph = new Graph();
+let eventGraph = new EventGraph();
 
-graph.addNode("node 1", {
+eventGraph.addNode("node 1", {
     description: "first node",
     tag: "movable"
 });
 
-graph.addNode("node 2");
+eventGraph.addNode("node 2");
 
 //graph.deleteNode("node 1");
 
-graph.getAllNodes(true);
+eventGraph.getAllNodes(true);
 
-graph.findNodes("node 1", true);
+eventGraph.findNodes("node 1", true);
