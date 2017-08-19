@@ -20,6 +20,10 @@ class EventGraph {
             throw new SyntaxError("You haven't provided a string based unique name for your node e.g. 'node1'");
         }
 
+        if (typeof this.nodeList[nodeId] !== 'undefined') {
+            throw new SyntaxError("Node " + nodeId + " already exists please enter another node ID");
+        }
+
         const {description: description = "", tag: tag = ""} = nodeOptions;
 
         this.nodeList[nodeId] = {
