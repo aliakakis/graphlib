@@ -1,126 +1,164 @@
 /**
- *
+ * Flow engine class
  */
-class EventGraph {
+class Flow {
     /**
-     *
+     * Constructor
+     * @param {object|string} objectToTest - The object to test either literal either JSON
      */
-    constructor() {
-        this.nodeList = {};
-        this.nodesArray = [];
+    constructor(objectToTest) {
+        this.startRunRule = '';
+        this.rulesList = {};
+        /* Check if object is JSON */
+        this.objectToTest = (function (objectToTest) {
+            try {
+                JSON.parse(objectToTest);
+            }
+            catch (error) {
+                return objectToTest;
+            }
+            return JSON.parse(objectToTest);
+        })(objectToTest);
     }
 
     /**
-     *
-     * @param nodeId
-     * @param nodeOptions
+     * Add rule function
+     * @param {string} id - Unique id of each rule
+     * @param {function} ruleFunc - with obj parameter for accessing the passed object to test
+     * @param {string|null} trueId - Rule to run if test passed
+     * @param {string|null} falseId -Rule to run if test failed
      */
-    addNode(nodeId, nodeOptions = {}) {
-        if (typeof nodeId === 'undefined' || nodeId === "" || typeof nodeId !== "string") {
-            throw new SyntaxError("You haven't provided a string based unique name for your node e.g. 'node1'");
+    addRule(id, ruleFunc, trueId, falseId) {
+        /* Syntax error checks */
+        if (arguments.length < 4) {
+            throw new SyntaxError('You must pass all parameters necessary e.g. addRule(\'rule1\', function(obj){}, \'rule2\', \'rule3\')');
         }
 
-        if (typeof this.nodeList[nodeId] !== 'undefined') {
-            throw new SyntaxError("Node " + nodeId + " already exists please enter another node ID");
+        if (typeof this.rulesList[id] !== 'undefined') {
+            throw new SyntaxError('Rule with id "' + id + '" already exists please enter another unique rule id');
         }
 
-        const {description: description = "", tag: tag = ""} = nodeOptions;
+        /* Save first rule id in order for the run command to know where to start */
+        if (Object.keys(this.rulesList).length === 0) {
+            this.startRunRule = id;
+        }
 
-        this.nodeList[nodeId] = {
-            description,
-            tag
+        /* Add rule to the rules list object */
+        this.rulesList[id] = {
+            rule: () => {
+                let ruleResult = ruleFunc(this.objectToTest) ?
+                    (console.log('Rule "' + id + '" passed'), trueId) :
+                    (console.log('Rule "' + id + '" not passed'), falseId);
+
+                if (ruleResult !== null) {
+                    if (typeof this.rulesList[ruleResult] === 'undefined') {
+                        throw new SyntaxError('Rule with id "' + id + '" is not in the rules list');
+                    }
+                    this.rulesList[ruleResult].rule();
+                }
+                else {
+                    console.log('END');
+                }
+
+            },
         };
     }
 
     /**
-     * Delete a node from the graph
-     * @param {string} nodeId - Unique string ID of the node to be deleted
+     * Add rules function
+     * @param {object|string} rules - JSON or literal object with the rules to run
      */
-    deleteNode(nodeId) {
-        if (typeof nodeId === 'undefined' || nodeId === "" || typeof nodeId !== "string") {
-            throw new SyntaxError("You haven't provided a string based unique name for the node to be deleted e.g. 'node1'");
+    addRules(rules) {
+        let parsedRules = {}; // Rules after checking if JSON
+
+        /* Syntax error checks */
+        if (Object.keys(this.rulesList).length === 0) {
+            throw new SyntaxError('You haven\'t provided an rules set.');
         }
 
-        if (typeof this.nodeList[nodeId] === 'undefined') {
-            throw new SyntaxError("Node " + nodeId + " is not present please check the name passed");
-        }
-
-        delete this.nodeList[nodeId];
-    }
-
-
-    /**
-     * Connect a node with another node creating edges
-     * @param sourceNodeId
-     * @param targetNodeId
-     * @param edgeLabel
-     */
-    addEdge(sourceNodeId, targetNodeId, edgeLabel) {
-
-    }
-
-    /**
-     * Delete a node edges
-     * @param sourceNodeId
-     * @param targetNodeId
-     * @param edgeLabel
-     */
-    deleteEdge(sourceNodeId, targetNodeId, edgeLabel) {
-
-    }
-
-    getEdgesOfNodes() {
-
-    }
-
-    /**
-     * Find nodes in the graph
-     * @param nodeId
-     * @param showInConsole
-     * @returns {Array}
-     */
-    findNodes(nodeId, showInConsole = false) {
-        if (typeof nodeId === 'undefined') {
-            throw new SyntaxError("You haven't provided the unique name or array of unique names for the node to be deleted e.g. 'node1' or ['node1', 'node2']");
-        }
-
-        let filteredNodesArray = [],
-            nodes = nodeId instanceof Array ? nodeId : [nodeId];
-
-        for (let name of nodes) {
-            if (typeof this.nodeList[name] === 'undefined') {
-                throw new SyntaxError("Node " + name + " is not present please check the name passed");
+        /* Check if object is JSON */
+        parsedRules = (function (rules) {
+            try {
+                JSON.parse(rules);
             }
-            filteredNodesArray.push(this.nodeList[name]);
-        }
+            catch (error) {
+                return Object.assign({}, parsedRules, rules);
+            }
+            return Object.assign({}, parsedRules, JSON.parse(rules));
+        })(rules);
 
-        showInConsole ? console.log(filteredNodesArray) : false;
-        return filteredNodesArray;
+        /* We have to merge these since we are dealing with a rule set */
+        Object.assign(this.rulesList, parsedRules);
+        
+        /* Add rule to the rules list object */
+        /*this.rulesList[id] = {
+            rule: () => {
+                let ruleResult = ruleFunc(this.objectToTest) ?
+                    (console.log('Rule "' + id + '" passed'), trueId) :
+                    (console.log('Rule "' + id + '" not passed'), falseId);
+
+                if (ruleResult !== null) {
+                    if (typeof this.rulesList[ruleResult] === 'undefined') {
+                        throw new SyntaxError('Rule with id "' + id + '" is not in the rules list');
+                    }
+                    this.rulesList[ruleResult].rule();
+                }
+                else {
+                    console.log('END');
+                }
+
+            },
+        };*/
     }
 
     /**
-     *
-     * @param showInConsole
-     * @returns {{}|*}
+     * Run flow engine rules set
      */
-    getAllNodes(showInConsole = false) {
-        showInConsole ? console.log(this.nodeList) : false;
-        return this.nodeList;
+    run() {
+        this.rulesList[Object.keys(this.rulesList)[0]].rule(); // Object.keys(this.rulesList)[0] -> get first key in object
     }
-
 }
 
-let eventGraph = new EventGraph();
-
-eventGraph.addNode("node 1", {
-    description: "first node",
-    tag: "movable"
+let flow = new Flow({
+    color: 'red'
 });
 
-eventGraph.addNode("node 2");
+/*flow.addRule('rule1', function(obj) {
+    return !!obj;
+}, 'rule2', 'rule3');
 
-//graph.deleteNode("node 1");
+flow.addRule('rule2', function(obj) {
+    return obj.color === 'red';
+}, 'rule3', null);
 
-eventGraph.getAllNodes(true);
+flow.addRule('rule3', function(obj) {
+    return obj.color === 'blue';
+}, null, null);*/
 
-eventGraph.findNodes("node 1", true);
+flow.addRules({
+    rule1: {
+        rule: function(obj) {
+            return !!obj;
+        },
+        trueId: 'rule2',
+        falseId: 'rule3'
+    },
+    rule2: {
+        rule: function(obj) {
+            return obj.color === 'red';
+        },
+        trueId: 'rule3',
+        falseId: null
+    },
+    rule3: {
+        rule: function(obj) {
+            return obj.color === 'blue';
+        },
+        trueId: null,
+        falseId: null
+    }
+});
+
+flow.run();
+
+
