@@ -9,6 +9,7 @@ class Flow {
     constructor(objectToTest) {
         this.startRunRule = '';
         this.rulesList = {};
+
         /* Check if object is JSON */
         this.objectToTest = (function (objectToTest) {
             try {
@@ -56,9 +57,11 @@ class Flow {
                     if (typeof this.rulesList[ruleResult] === 'undefined') {
                         throw new SyntaxError('Rule with id "' + id + '" is not in the rules list');
                     }
+                    /* Go to next rule */
                     this.rulesList[ruleResult].rule();
                 }
                 else {
+                    /* If null for trueId or falseId end execution */
                     console.log('END');
                 }
 
@@ -96,17 +99,21 @@ class Flow {
         Object.keys(this.rulesList).forEach((ruleId) => {
             this.rulesList[ruleId].saveResult = this.rulesList[ruleId].rule(this.objectToTest);
             this.rulesList[ruleId].rule = () => {
+                /* Run the function and return the id for the next rule */
                 let ruleResult = this.rulesList[ruleId].saveResult ?
                     (console.log('Rule "' + ruleId + '" passed'), this.rulesList[ruleId].trueId) :
                     (console.log('Rule "' + ruleId + '" not passed'), this.rulesList[ruleId].falseId);
 
                 if (ruleResult !== null) {
+                    /* In case the next rule id is missing throw an error */
                     if (typeof this.rulesList[ruleResult] === 'undefined') {
                         throw new SyntaxError('Rule with id "' + ruleId + '" is not in the rules list');
                     }
+                    /* Go to next rule */
                     this.rulesList[ruleResult].rule();
                 }
                 else {
+                    /* If null for trueId or falseId end execution */
                     console.log('END');
                 }
             }
