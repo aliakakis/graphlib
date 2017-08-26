@@ -46,11 +46,13 @@ class Flow {
         /* Add rule to the rules list object */
         this.rulesList[id] = {
             rule: () => {
+                /* Run the function and return the id for the next rule */
                 let ruleResult = ruleFunc(this.objectToTest) ?
                     (console.log('Rule "' + id + '" passed'), trueId) :
                     (console.log('Rule "' + id + '" not passed'), falseId);
 
                 if (ruleResult !== null) {
+                    /* In case the next rule id is missing throw an error */
                     if (typeof this.rulesList[ruleResult] === 'undefined') {
                         throw new SyntaxError('Rule with id "' + id + '" is not in the rules list');
                     }
@@ -71,11 +73,6 @@ class Flow {
     addRules(rules) {
         let parsedRules = {}; // Rules after checking if JSON
 
-        /* Syntax error checks */
-        if (Object.keys(this.rulesList).length === 0) {
-            throw new SyntaxError('You haven\'t provided an rules set.');
-        }
-
         /* Check if object is JSON */
         parsedRules = (function (rules) {
             try {
@@ -89,26 +86,31 @@ class Flow {
 
         /* We have to merge these since we are dealing with a rule set */
         Object.assign(this.rulesList, parsedRules);
-        
-        /* Add rule to the rules list object */
-        /*this.rulesList[id] = {
-            rule: () => {
-                let ruleResult = ruleFunc(this.objectToTest) ?
-                    (console.log('Rule "' + id + '" passed'), trueId) :
-                    (console.log('Rule "' + id + '" not passed'), falseId);
+
+        /* Syntax error checks */
+        if (Object.keys(this.rulesList).length === 0) {
+            throw new SyntaxError('You haven\'t provided an rules set.');
+        }
+
+        /* Replace rule function in order to have greater control */
+        Object.keys(this.rulesList).forEach((ruleId) => {
+            this.rulesList[ruleId].saveResult = this.rulesList[ruleId].rule(this.objectToTest);
+            this.rulesList[ruleId].rule = () => {
+                let ruleResult = this.rulesList[ruleId].saveResult ?
+                    (console.log('Rule "' + ruleId + '" passed'), this.rulesList[ruleId].trueId) :
+                    (console.log('Rule "' + ruleId + '" not passed'), this.rulesList[ruleId].falseId);
 
                 if (ruleResult !== null) {
                     if (typeof this.rulesList[ruleResult] === 'undefined') {
-                        throw new SyntaxError('Rule with id "' + id + '" is not in the rules list');
+                        throw new SyntaxError('Rule with id "' + ruleId + '" is not in the rules list');
                     }
                     this.rulesList[ruleResult].rule();
                 }
                 else {
                     console.log('END');
                 }
-
-            },
-        };*/
+            }
+        });
     }
 
     /**
@@ -119,11 +121,12 @@ class Flow {
     }
 }
 
+/* First example uses add one rule at a time */
 let flow = new Flow({
     color: 'red'
 });
 
-/*flow.addRule('rule1', function(obj) {
+flow.addRule('rule1', function(obj) {
     return !!obj;
 }, 'rule2', 'rule3');
 
@@ -133,9 +136,16 @@ flow.addRule('rule2', function(obj) {
 
 flow.addRule('rule3', function(obj) {
     return obj.color === 'blue';
-}, null, null);*/
+}, null, null);
 
-flow.addRules({
+flow.run();
+
+/* Second example passes a JSON object or literal object */
+let flowRuleSet = new Flow({
+    color: 'red'
+});
+
+flowRuleSet.addRules({
     rule1: {
         rule: function(obj) {
             return !!obj;
@@ -159,6 +169,6 @@ flow.addRules({
     }
 });
 
-flow.run();
+flowRuleSet.run();
 
 
